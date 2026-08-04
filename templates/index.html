@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PowerFlow — Electrical Business Manager</title>
+  <link rel="icon" type="image/png" href="/static/img/icon.png">
+  <link rel="apple-touch-icon" href="/static/img/icon.png">
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <div class="header-content">
+        <div class="logo-section">
+          <div class="app-icon"><img src="/static/img/icon.png" alt="PowerFlow"></div>
+          <div class="title-section">
+            <h1>POWERFLOW</h1>
+            <p class="tagline">Purchasing • Inventory • Sales • Invoicing • End-to-End Electrical Supply</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <nav class="tab-bar" id="tab-bar"></nav>
+
+    <div class="page-toolbar">
+      <div class="page-toolbar-text">
+        <h2 id="page-title">Dashboard</h2>
+        <p id="page-subtitle">Business overview</p>
+      </div>
+      <div class="page-toolbar-actions" id="topbar-actions"></div>
+    </div>
+
+    <main class="app-main" id="content"></main>
+
+    <footer class="app-footer">
+      <span>Developed by Robert Foster — Complete Electrical Supply Chain Management</span>
+      <span><a href="/api/docs" style="color:var(--color-gold);text-decoration:none;margin-right:16px">API Docs</a>v1.0.0</span>
+    </footer>
+  </div>
+
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <h2 id="modal-title">Modal</h2>
+        <button class="btn-icon" id="modal-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer" id="modal-footer"></div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="/static/js/app.js" type="module"></script>
+</body>
+</html>

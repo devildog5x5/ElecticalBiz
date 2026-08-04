@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PowerFlow API Documentation</title>
+  <link rel="icon" type="image/png" href="/static/img/icon.png">
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <style>
+    .docs-wrap { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    .docs-hero {
+      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+      border-radius: 10px; padding: 28px 32px; margin-bottom: 24px;
+    }
+    .docs-hero h1 { color: #fff; font-size: 26px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+    .docs-hero-icon { width: 40px; height: 40px; image-rendering: pixelated; }
+    .docs-hero p { color: #e0e7ff; font-size: 14px; }
+    .docs-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+    .docs-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .docs-nav button {
+      background: var(--color-bg-tertiary); border: 1px solid var(--color-border);
+      color: var(--color-text); padding: 8px 14px; border-radius: 6px;
+      cursor: pointer; font-family: inherit; font-size: 0.82rem;
+    }
+    .docs-nav button.active { background: var(--color-gold-soft); color: var(--color-gold); border-color: var(--color-gold); }
+    .endpoint { border: 1px solid var(--color-border); border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
+    .endpoint-header {
+      display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+      background: var(--color-bg-secondary); cursor: pointer;
+    }
+    .endpoint-header:hover { background: var(--color-bg-tertiary); }
+    .method {
+      font-size: 0.72rem; font-weight: 700; padding: 4px 8px; border-radius: 4px;
+      min-width: 52px; text-align: center; font-family: monospace;
+    }
+    .method-get { background: rgba(63,185,80,0.2); color: #3fb950; }
+    .method-post { background: rgba(88,166,255,0.2); color: #58a6ff; }
+    .method-put { background: rgba(240,165,0,0.2); color: #f0a500; }
+    .method-patch { background: rgba(139,92,246,0.2); color: #8b5cf6; }
+    .method-delete { background: rgba(248,81,73,0.2); color: #f85149; }
+    .endpoint-path { font-family: monospace; font-size: 0.9rem; }
+    .endpoint-body { padding: 16px; display: none; border-top: 1px solid var(--color-border); font-size: 0.85rem; }
+    .endpoint.open .endpoint-body { display: block; }
+    .endpoint-desc { color: var(--color-text-muted); margin-bottom: 12px; }
+    .schema-block {
+      background: var(--color-bg-tertiary); border-radius: 6px; padding: 12px;
+      font-family: monospace; font-size: 0.78rem; overflow-x: auto; white-space: pre-wrap;
+    }
+    .param-list { margin: 8px 0; }
+    .param-list li { margin: 4px 0; color: var(--color-text-muted); }
+    .param-list code { color: var(--color-gold); }
+    .back-link { color: var(--color-gold); text-decoration: none; font-size: 0.85rem; }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="docs-wrap">
+    <p><a class="back-link" href="/">← Back to PowerFlow</a></p>
+
+    <div class="docs-hero">
+      <h1><img class="docs-hero-icon" src="/static/img/icon.png" alt=""> PowerFlow REST API</h1>
+      <p>Version 1.0.0 — JSON API for electrical supply chain management</p>
+      <div class="docs-links">
+        <a class="btn btn-primary" href="/api/openapi.json" target="_blank">OpenAPI JSON</a>
+        <a class="btn btn-secondary" href="/api/docs/markdown" target="_blank">Markdown Reference</a>
+        <a class="btn btn-secondary" href="/api" target="_blank">API Index</a>
+        <a class="btn btn-secondary" href="/api/health" target="_blank">Health Check</a>
+      </div>
+    </div>
+
+    <div class="card mb-20">
+      <div class="card-title" style="margin-bottom:12px">Quick Start</div>
+      <div class="schema-block"># Base URL
+http://127.0.0.1:5000
+
+# All write endpoints accept Content-Type: application/json
+
+# Example: list suppliers
+curl http://127.0.0.1:5000/api/suppliers
+
+# Example: create customer
+curl -X POST http://127.0.0.1:5000/api/customers \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Acme Electric","type":"contractor"}'
+
+# Example: full reports with date filter
+curl "http://127.0.0.1:5000/api/reports/full?from=2026-01-01&to=2026-12-31"</div>
+    </div>
+
+    <nav class="docs-nav" id="tag-nav"></nav>
+    <div id="endpoints"></div>
+  </div>
+
+  <script>
+    const METHOD_ORDER = ['get','post','put','patch','delete'];
+
+    async function loadDocs() {
+      const spec = await fetch('/api/openapi.json').then(r => r.json());
+      const tags = spec.tags.map(t => t.name);
+      const nav = document.getElementById('tag-nav');
+      let activeTag = tags[0];
+
+      function renderEndpoints(tag) {
+        activeTag = tag;
+        nav.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.textContent === tag));
+        const paths = Object.entries(spec.paths).flatMap(([path, methods]) =>
+          Object.entries(methods).map(([method, op]) => ({ path, method, op }))
+        ).filter(e => e.op.tags && e.op.tags[0] === tag)
+         .sort((a, b) => METHOD_ORDER.indexOf(a.method) - METHOD_ORDER.indexOf(b.method));
+
+        document.getElementById('endpoints').innerHTML = paths.map(({ path, method, op }) => {
+          const params = (op.parameters || []).map(p =>
+            `<li><code>${p.name}</code> (${p.in}) — ${p.schema?.type || ''} ${p.required ? '(required)' : ''}</li>`
+          ).join('');
+          const body = op.requestBody?.content?.['application/json']?.schema;
+          const bodyHtml = body ? `<p><strong>Request body:</strong></p><div class="schema-block">${JSON.stringify(body, null, 2)}</div>` : '';
+          return `<div class="endpoint">
+            <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+              <span class="method method-${method}">${method.toUpperCase()}</span>
+              <span class="endpoint-path">${path}</span>
+              <span style="margin-left:auto;color:var(--color-text-muted)">${op.summary || ''}</span>
+            </div>
+            <div class="endpoint-body">
+              <p class="endpoint-desc">${op.description || op.summary || ''}</p>
+              ${params ? `<ul class="param-list">${params}</ul>` : ''}
+              ${bodyHtml}
+            </div>
+          </div>`;
+        }).join('') || '<p class="text-muted">No endpoints in this section.</p>';
+      }
+
+      nav.innerHTML = tags.map(t => `<button>${t}</button>`).join('');
+      nav.querySelectorAll('button').forEach(btn => btn.onclick = () => renderEndpoints(btn.textContent));
+      renderEndpoints(activeTag);
+    }
+    loadDocs();
+  </script>
+</body>
+</html>
